@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post to Blogger</title>
+    <script src="https://apis.google.com/js/api.js"></script>
+</head>
+<body>
+    <h1>Blogger Content Post</h1>
+
+    <form id="blogForm">
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" required><br><br>
+
+        <label for="blog">Blog Content:</label><br>
+        <textarea id="blog" name="blog" rows="4" cols="50" required></textarea><br><br>
+
+        <label for="location">Location:</label><br>
+        <input type="text" id="location" name="location" required><br><br>
+
+        <label for="label">Label:</label><br>
+        <input type="text" id="label" name="label" required><br><br>
+
+        <button type="submit">Post Blog</button>
+    </form>
+
+    <script>
+        // Initialize the OAuth 2.0 client
+        const CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+        const API_KEY = 'AIzaSyAEkEJ__sxOd_AHq1ePBNyHypkjBXCzUUU';
+        const SCOPE = 'https://www.googleapis.com/auth/blogger';
+        let tokenClient;
+
+        // Load the API client and auth2 library
+        function loadClient() {
+            gapi.load('client:auth2', initAuth);
+        }
+
+        function initAuth() {
+            gapi.auth2.init({
+                client_id: CLIENT_ID,
+            }).then(() => {
+                tokenClient = gapi.auth2.getAuthInstance();
+            });
+        }
+
+        function authenticate() {
+            return tokenClient.signIn();
+        }
+
+        function postToBlogger(postData) {
+            gapi.client.load('https://www.googleapis.com/discovery/v1/apis/blogger/v3/rest').then(() => {
+                const request = gapi.client.blogger.posts.insert({
+                    blogId: 'YOUR_BLOG_ID', // Replace with your blog ID
+                    resource: postData
+                });
+
+                request.execute((response) => {
+                    console.log(response);
+                    alert('Post successfully created!');
+                });
+            });
+        }
+
+        // Handle form submission
+        document.getElementById('blogForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const blogContent = document.getElementById('blog').value;
+            const location = document.getElementById('location').value;
+            const label = document.getElementById('label').value;
+
+            const postData = {
+                title: title,
+                content: blogContent,
+                labels: [label],
+                location: location
+            };
+
+            authenticate().then(() => {
+                postToBlogger(postData);
+            }).catch((err) => {
+                console.error(err);
+                alert('Authentication failed');
+            });
+        });
+
+        // Load client on page load
+        window.onload = loadClient;
+    </script>
+</body>
+</html>

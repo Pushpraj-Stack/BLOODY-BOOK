@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POST</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.8;
+        }
+        .post-container {
+            max-width: 800px;
+            margin: auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .post-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .post img {
+            max-width: 100%;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .post-content {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="post-container">
+        <div class="post">
+            <div class="post-title" id="post-title"></div>
+            <img id="post-image" alt="Featured Image" style="display:none;">
+            <div class="post-content" id="post-content"></div>
+            <script src="config.js"></script>
+
+        </div>
+    </div>
+
+    <script>
+        const postTitle = document.getElementById("post-title");
+        const postImage = document.getElementById("post-image");
+        const postContent = document.getElementById("post-content");
+
+        // Replace with your API key and Blog ID
+        const API_KEY = CONFIG.API_KEY;
+        const BLOG_ID = CONFIG.BLOG_ID;
+
+        // Extract post ID from query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const postId = urlParams.get("postId");
+
+        if (!postId) {
+            document.querySelector(".post-container").innerHTML = `<p>Error: No post ID provided.</p>`;
+        } else {
+            fetchPostById(postId);
+        }
+
+        // Fetch post data by ID
+        async function fetchPostById(postId) {
+            const apiUrl = `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/${postId}?key=${API_KEY}`;
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("Failed to fetch post");
+                const post = await response.json();
+                displayPost(post);
+            } catch (error) {
+                console.error(error);
+                document.querySelector(".post-container").innerHTML = `<p>Error loading post. Please try again later.</p>`;
+            }
+        }
+
+        // Display the post content
+        function displayPost(post) {
+            postTitle.textContent = post.title;
+            postContent.innerHTML = post.content;
+
+            // Extract featured image (if available)
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = post.content;
+            const imgTag = tempDiv.querySelector("img");
+            if (imgTag) {
+                postImage.src = imgTag.src;
+                postImage.style.display = "block";
+            }
+        }
+    </script>
+</body>
+</html>
